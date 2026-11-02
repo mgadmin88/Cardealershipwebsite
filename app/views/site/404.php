@@ -1,0 +1,1 @@
+<div class="container full-center"><div><div class="big">۴۰۴</div><h1>صفحه مورد نظر پیدا نشد</h1><p class="muted">ممکن است آدرس اشتباه باشد یا این صفحه حذف شده باشد.</p><a class="btn btn-accent" href="<?= url('/') ?>">بازگشت به صفحه اصلی</a></div></div>

@@ -1,0 +1,24 @@
+# secrets & per-server config (created by install.php)
+/config.php
+
+# runtime data
+/storage/*.sqlite
+/storage/installed.lock
+/storage/reset-password.txt
+/storage/sessions/*
+/storage/logs/*
+/storage/cache/*
+!/storage/sessions/.gitkeep
+!/storage/logs/.gitkeep
+!/storage/cache/.gitkeep
+
+# user uploads (car photos, slides, …) — keep only the protection file
+/public/uploads/*
+!/public/uploads/.htaccess
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.zip

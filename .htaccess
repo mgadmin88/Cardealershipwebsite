@@ -1,0 +1,8 @@
+# Root .htaccess: route everything into /public (for hosts where the docroot cannot be changed)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(app|storage)(/|$) - [F,L]
+  RewriteRule ^(config\.php|config\.sample\.php|README\.md|.*\.zip)$ - [F,L]
+  RewriteRule ^$ public/ [L]
+  RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+</IfModule>

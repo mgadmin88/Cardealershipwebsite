@@ -1,0 +1,55 @@
+<?php
+/**
+ * لیست پیش‌فرض برندها و مدل‌های بازار ایران (داخلی و خارجی).
+ * در نصب اولیه وارد دیتابیس می‌شود و از پنل مدیریت قابل افزودن/ویرایش است.
+ * format: [name_fa, name_en, origin(domestic|foreign), [models...]]  model: "نام فارسی|EnglishName|body"
+ */
+return [
+    // ---------------- داخلی (تولید / مونتاژ داخل) ----------------
+    ['ایران خودرو', 'Iran Khodro', 'domestic', ['سمند|Samand|sedan', 'سمند سورن|Soren|sedan', 'سورن پلاس|Soren Plus|sedan', 'دنا|Dena|sedan', 'دنا پلاس|Dena Plus|sedan', 'دنا پلاس توربو|Dena Plus Turbo|sedan', 'رانا|Runna|sedan', 'رانا پلاس|Runna Plus|sedan', 'تارا|Tara|sedan', 'ری‌را|Reera|suv', 'هایما S5|Haima S5|suv', 'هایما S7|Haima S7|suv', 'هایما 7X|Haima 7X|suv', 'آریسان|Arisan|pickup', 'پیکان وانت|Paykan Pickup|pickup']],
+    ['پژو', 'Peugeot', 'domestic', ['206 تیپ 2|206 Type 2|hatchback', '206 تیپ 5|206 Type 5|hatchback', '206 SD|206 SD|sedan', '207i|207i|hatchback', '207 پانوراما|207 Panorama|hatchback', 'پارس|Pars|sedan', 'پارس LX|Pars LX|sedan', '405 GLX|405 GLX|sedan', '405 SLX|405 SLX|sedan', '2008|2008|suv', '301|301|sedan', '508|508|sedan']],
+    ['سایپا', 'Saipa', 'domestic', ['پراید 111|Pride 111|hatchback', 'پراید 131|Pride 131|sedan', 'پراید 132|Pride 132|sedan', 'پراید 151|Pride 151|pickup', 'تیبا|Tiba|sedan', 'تیبا 2|Tiba 2|hatchback', 'ساینا|Saina|sedan', 'ساینا S|Saina S|sedan', 'کوییک|Quick|hatchback', 'کوییک R|Quick R|hatchback', 'شاهین|Shahin|sedan', 'شاهین G|Shahin G|sedan', 'اطلس|Atlas|hatchback', 'سهند|Sahand|sedan', 'آریا|Aria|suv']],
+    ['رنو', 'Renault', 'domestic', ['تندر 90|Tondar 90|sedan', 'تندر 90 پلاس|Tondar 90 Plus|sedan', 'ساندرو|Sandero|hatchback', 'ساندرو استپ‌وی|Sandero Stepway|hatchback', 'کپچر|Captur|suv', 'کولئوس|Koleos|suv', 'داستر|Duster|suv', 'سیمبل|Symbol|sedan']],
+    ['ام وی ام', 'MVM', 'domestic', ['110|110|hatchback', '315|315|sedan', '530|530|sedan', '550|550|sedan', 'X22|X22|suv', 'X22 Pro|X22 Pro|suv', 'X33|X33|suv', 'X33 Cross|X33 Cross|suv', 'X33 S|X33 S|suv', 'X55|X55|suv', 'X55 Pro|X55 Pro|suv', 'آریزو 5|Arrizo 5|sedan', 'آریزو 6 پرو|Arrizo 6 Pro|sedan', 'تیگو 7|Tiggo 7|suv', 'تیگو 8|Tiggo 8|suv']],
+    ['فونیکس', 'Fownix', 'domestic', ['تیگو 7 پرو|Tiggo 7 Pro|suv', 'تیگو 7 پرو مکس|Tiggo 7 Pro Max|suv', 'تیگو 8 پرو|Tiggo 8 Pro|suv', 'تیگو 8 پرو مکس|Tiggo 8 Pro Max|suv', 'آریزو 6 پرو|Arrizo 6 Pro|sedan', 'آریزو 8|Arrizo 8|sedan', 'FX|FX|suv']],
+    ['کی ام سی', 'KMC', 'domestic', ['J7|J7|suv', 'T8|T8|pickup', 'K7|K7|suv', 'X5|X5|suv', 'A5|A5|sedan', 'T9|T9|pickup', 'eJ7|eJ7|suv']],
+    ['جک', 'JAC', 'domestic', ['J4|J4|sedan', 'J5|J5|sedan', 'S3|S3|suv', 'S5|S5|suv', 'S7|S7|suv']],
+    ['دیگنیتی', 'Dignity', 'domestic', ['پرستیژ|Prestige|suv', 'هانتر|Hunter|suv']],
+    ['فیدلیتی', 'Fidelity', 'domestic', ['پرستیژ|Prestige|suv', 'الیت|Elite|suv']],
+    ['لاماری', 'Lamari', 'domestic', ['ایما|Eama|suv']],
+    ['دایون', 'Dayun', 'domestic', ['Y5|Y5|suv']],
+    ['بسترن', 'Bestune', 'domestic', ['B30|B30|sedan', 'T77|T77|suv', 'B70|B70|sedan']],
+    ['هیوندای (مونتاژ)', 'Hyundai CKD', 'domestic', ['اکسنت|Accent|sedan', 'i20|i20|hatchback', 'النترا|Elantra|sedan']],
+    ['کیا (مونتاژ)', 'Kia CKD', 'domestic', ['ریو|Rio|sedan', 'سراتو|Cerato|sedan', 'سورنتو|Sorento|suv']],
+    ['ایکس‌تریم', 'Extreme', 'domestic', ['TXL|TXL|suv', 'VX|VX|suv', 'LX|LX|suv']],
+    ['کرمان موتور', 'Kerman Motor', 'domestic', ['لوکسژن S3|Luxgen S3|sedan', 'لوکسژن U5|Luxgen U5|suv']],
+    // ---------------- خارجی (وارداتی) ----------------
+    ['تویوتا', 'Toyota', 'foreign', ['کمری|Camry|sedan', 'کمری هیبرید|Camry Hybrid|sedan', 'کرولا|Corolla|sedan', 'کرولا کراس|Corolla Cross|suv', 'یاریس|Yaris|hatchback', 'RAV4|RAV4|suv', 'C-HR|C-HR|suv', 'پرادو|Prado|suv', 'لندکروزر|Land Cruiser|suv', 'هایلوکس|Hilux|pickup', 'فورچونر|Fortuner|suv', 'پریوس|Prius|hatchback']],
+    ['هیوندای', 'Hyundai', 'foreign', ['سوناتا|Sonata|sedan', 'النترا|Elantra|sedan', 'آزرا|Azera|sedan', 'توسان|Tucson|suv', 'سانتافه|Santa Fe|suv', 'کونا|Kona|suv', 'i30|i30|hatchback', 'جنسیس کوپه|Genesis Coupe|coupe', 'ولستر|Veloster|coupe']],
+    ['کیا', 'Kia', 'foreign', ['اپتیما|Optima|sedan', 'K5|K5|sedan', 'سراتو|Cerato|sedan', 'اسپورتیج|Sportage|suv', 'سورنتو|Sorento|suv', 'سول|Soul|hatchback', 'پیکانتو|Picanto|hatchback', 'کادنزا|Cadenza|sedan', 'موهاوی|Mohave|suv']],
+    ['نیسان', 'Nissan', 'foreign', ['ماکسیما|Maxima|sedan', 'تیانا|Teana|sedan', 'سانی|Sunny|sedan', 'جوک|Juke|suv', 'قشقایی|Qashqai|suv', 'ایکس‌تریل|X-Trail|suv', 'مورانو|Murano|suv', 'پاترول|Patrol|suv', 'ناوارا|Navara|pickup']],
+    ['مزدا', 'Mazda', 'foreign', ['مزدا 3|Mazda3|sedan', 'مزدا 6|Mazda6|sedan', 'CX-3|CX-3|suv', 'CX-5|CX-5|suv', 'CX-9|CX-9|suv', 'MX-5|MX-5|convertible']],
+    ['هوندا', 'Honda', 'foreign', ['سیویک|Civic|sedan', 'آکورد|Accord|sedan', 'CR-V|CR-V|suv', 'HR-V|HR-V|suv']],
+    ['مرسدس بنز', 'Mercedes-Benz', 'foreign', ['A200|A200|hatchback', 'C200|C200|sedan', 'C300|C300|sedan', 'E200|E200|sedan', 'E250|E250|sedan', 'E300|E300|sedan', 'S450|S450|sedan', 'S500|S500|sedan', 'CLA 200|CLA 200|sedan', 'GLA|GLA|suv', 'GLC|GLC|suv', 'GLE|GLE|suv', 'GLS|GLS|suv', 'G63 AMG|G63 AMG|suv']],
+    ['بی ام و', 'BMW', 'foreign', ['320i|320i|sedan', '330i|330i|sedan', '520i|520i|sedan', '528i|528i|sedan', '530i|530i|sedan', '730Li|730Li|sedan', 'X1|X1|suv', 'X3|X3|suv', 'X4|X4|suv', 'X5|X5|suv', 'X6|X6|suv', 'X7|X7|suv', 'Z4|Z4|convertible']],
+    ['آئودی', 'Audi', 'foreign', ['A3|A3|sedan', 'A4|A4|sedan', 'A5|A5|coupe', 'A6|A6|sedan', 'A8|A8|sedan', 'Q3|Q3|suv', 'Q5|Q5|suv', 'Q7|Q7|suv', 'Q8|Q8|suv']],
+    ['پورشه', 'Porsche', 'foreign', ['کاین|Cayenne|suv', 'ماکان|Macan|suv', 'پانامرا|Panamera|sedan', '911|911|coupe', 'تایکان|Taycan|sedan']],
+    ['لکسوس', 'Lexus', 'foreign', ['ES|ES|sedan', 'IS|IS|sedan', 'NX|NX|suv', 'RX|RX|suv', 'LX|LX|suv', 'UX|UX|suv']],
+    ['فولکس واگن', 'Volkswagen', 'foreign', ['گلف|Golf|hatchback', 'جتا|Jetta|sedan', 'پاسات|Passat|sedan', 'تیگوان|Tiguan|suv', 'توارگ|Touareg|suv']],
+    ['لندرور', 'Land Rover', 'foreign', ['رنجرور|Range Rover|suv', 'رنجرور اسپرت|Range Rover Sport|suv', 'رنجرور ولار|Range Rover Velar|suv', 'رنجرور ایووک|Range Rover Evoque|suv', 'دیسکاوری|Discovery|suv', 'دیفندر|Defender|suv']],
+    ['ولوو', 'Volvo', 'foreign', ['S60|S60|sedan', 'S90|S90|sedan', 'XC40|XC40|suv', 'XC60|XC60|suv', 'XC90|XC90|suv']],
+    ['میتسوبیشی', 'Mitsubishi', 'foreign', ['لنسر|Lancer|sedan', 'ASX|ASX|suv', 'اوتلندر|Outlander|suv', 'پاجرو|Pajero|suv', 'L200|L200|pickup']],
+    ['سوزوکی', 'Suzuki', 'foreign', ['سوئیفت|Swift|hatchback', 'ویتارا|Vitara|suv', 'گرند ویتارا|Grand Vitara|suv', 'کیزاشی|Kizashi|sedan', 'جیمنی|Jimny|suv']],
+    ['شورولت', 'Chevrolet', 'foreign', ['کروز|Cruze|sedan', 'مالیبو|Malibu|sedan', 'کامارو|Camaro|coupe', 'کاپتیوا|Captiva|suv', 'تاهو|Tahoe|suv']],
+    ['فورد', 'Ford', 'foreign', ['فیوژن|Fusion|sedan', 'موستانگ|Mustang|coupe', 'اکسپلورر|Explorer|suv', 'اج|Edge|suv', 'رنجر|Ranger|pickup']],
+    ['چری', 'Chery', 'foreign', ['تیگو 4|Tiggo 4|suv', 'تیگو 7|Tiggo 7|suv', 'تیگو 8|Tiggo 8|suv', 'آریزو 5|Arrizo 5|sedan', 'آریزو 8|Arrizo 8|sedan']],
+    ['جیلی', 'Geely', 'foreign', ['امگرند|Emgrand|sedan', 'کولری|Coolray|suv', 'آزکارا|Azkarra|suv', 'اوکاوانگو|Okavango|suv', 'مونجارو|Monjaro|suv']],
+    ['هاوال', 'Haval', 'foreign', ['H2|H2|suv', 'H6|H6|suv', 'جولیان|Jolion|suv', 'H9|H9|suv']],
+    ['بی وای دی', 'BYD', 'foreign', ['Atto 3|Atto 3|suv', 'سانگ پلاس|Song Plus|suv', 'سیل|Seal|sedan', 'هان|Han|sedan', 'تانگ|Tang|suv', 'دلفین|Dolphin|hatchback']],
+    ['تسلا', 'Tesla', 'foreign', ['Model 3|Model 3|sedan', 'Model Y|Model Y|suv', 'Model S|Model S|sedan', 'Model X|Model X|suv']],
+    ['ام جی', 'MG', 'foreign', ['MG5|MG5|sedan', 'MG6|MG6|sedan', 'ZS|ZS|suv', 'HS|HS|suv', 'RX5|RX5|suv']],
+    ['سانگ یانگ', 'SsangYong', 'foreign', ['تیوولی|Tivoli|suv', 'کوراندو|Korando|suv', 'رکستون|Rexton|suv', 'اکتیون|Actyon|suv']],
+    ['جیپ', 'Jeep', 'foreign', ['رنگلر|Wrangler|suv', 'گرند چروکی|Grand Cherokee|suv', 'کامپس|Compass|suv', 'رنگید|Renegade|suv']],
+    ['مینی', 'MINI', 'foreign', ['کوپر|Cooper|hatchback', 'کانتریمن|Countryman|suv']],
+    ['اینفینیتی', 'Infiniti', 'foreign', ['Q50|Q50|sedan', 'QX50|QX50|suv', 'QX60|QX60|suv', 'QX80|QX80|suv']],
+];
