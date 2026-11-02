@@ -4,9 +4,11 @@ $links = [
     'home' => ['account', 'grid', 'پیشخوان'],
     'orders' => ['account/orders', 'cart', 'سفارش‌های من'],
     'payments' => ['account/payments', 'card', 'پرداخت‌ها'],
+    'appointments' => ['account/appointments', 'wrench', 'نوبت‌های سرویس'],
     'requests' => ['account/requests', 'message', 'درخواست‌ها'],
     'profile' => ['account/profile', 'user', 'اطلاعات حساب'],
 ];
+if (!module('service_booking')) unset($links['appointments']);
 $navActive = $tab === 'order' ? 'orders' : $tab;
 ?>
 <aside class="acc-side">
@@ -22,6 +24,7 @@ $navActive = $tab === 'order' ? 'orders' : $tab;
     <?php foreach ($links as $k => [$href, $ic, $label]): ?>
       <a href="<?= url($href) ?>" class="<?= $navActive === $k ? 'on' : '' ?>"<?= $navActive === $k ? ' aria-current="page"' : '' ?>><?= icon($ic) ?><span><?= $label ?></span>
         <?php if ($k === 'orders' && $counts['orders']): ?><em><?= fa($counts['orders']) ?></em><?php endif ?>
+        <?php if ($k === 'appointments' && !empty($counts['appts'])): ?><em><?= fa($counts['appts']) ?></em><?php endif ?>
         <?php if ($k === 'requests' && $counts['requests']): ?><em><?= fa($counts['requests']) ?></em><?php endif ?></a>
     <?php endforeach ?>
     <form method="post" action="<?= url('account/logout') ?>"><?= csrf_field() ?><button type="submit"><?= icon('logout') ?><span>خروج</span></button></form>

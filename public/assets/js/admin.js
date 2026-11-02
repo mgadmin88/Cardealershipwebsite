@@ -18,7 +18,7 @@
   $('#backdrop')?.addEventListener('click', () => { $('#side').classList.remove('open'); $('#backdrop').classList.remove('show'); });
   $('[data-adm-theme]')?.addEventListener('click', () => {
     const d = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = d; try { localStorage.setItem('adm-theme', d); } catch {}
+    document.documentElement.dataset.theme = d; try { localStorage.setItem('theme', d); localStorage.removeItem('adm-theme'); } catch {}
   });
 
   $$('[data-autosubmit]').forEach(el => el.addEventListener('change', () => el.form.submit()));

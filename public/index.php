@@ -17,6 +17,7 @@ require APP . '/controllers/site.php';
 require APP . '/controllers/shop.php';
 require APP . '/controllers/payment.php';
 if (str_starts_with($path, '/account')) require APP . '/controllers/account.php';
+require APP . '/controllers/service.php';
 if ($isAdmin) require APP . '/controllers/admin.php';
 
 /* ---------- Global CSRF for every POST (payment callbacks from banks are exempt) ---------- */
@@ -25,7 +26,7 @@ if ($method === 'POST' && !str_starts_with($path, '/payment/callback/')) csrf_ch
 /* ---------- Captcha + honeypot on public forms ---------- */
 if ($method === 'POST') {
     foreach (['#^/contact$#' => 'contact', '#^/sell$#' => 'sell', '#^/request$#' => 'request', '#^/buy/\d+$#' => 'buy',
-              '#^/checkout$#' => 'checkout', '#^/track$#' => 'track'] as $re => $form) {
+              '#^/checkout$#' => 'checkout', '#^/track$#' => 'track', '#^/service$#' => 'service', '#^/service/track$#' => 'strack'] as $re => $form) {
         if (!preg_match($re, $path) || Captcha::verify($form)) continue;
         $msg = 'کد امنیتی اشتباه است یا منقضی شده. کد جدید را وارد کنید.';
         if (($_SERVER['HTTP_ACCEPT'] ?? '') === 'application/json') json_out(['ok' => false, 'msg' => $msg]);

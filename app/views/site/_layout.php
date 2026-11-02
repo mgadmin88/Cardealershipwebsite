@@ -57,7 +57,8 @@ $headerStyle = setting('theme_header', 'light');
       <?php if (module('new_cars')): ?><a href="<?= url('cars', ['condition' => 'new']) ?>" class="<?= ($_GET['condition'] ?? '') === 'new' ? 'active' : '' ?>">خودروی صفر</a><?php endif ?>
       <?php if (module('parts_shop')): ?><a href="<?= url('parts') ?>" class="<?= $isActive('/part') ?>">قطعات و آپشن</a><?php endif ?>
       <?php if (module('sell_request')): ?><a href="<?= url('sell') ?>" class="<?= $isActive('/sell') ?>">فروش خودروی شما</a><?php endif ?>
-      <?php if (module('about')): ?><a href="<?= url('about') ?>" class="<?= $isActive('/about') ?>">درباره ما</a><?php endif ?>
+      <?php if (module('service_booking')): ?><a href="<?= url('service') ?>" class="<?= $isActive('/service') ?>">نوبت سرویس</a><?php endif ?>
+      <?php if (module('about')): ?><a href="<?= url('about') ?>" class="nav-opt <?= $isActive('/about') ?>">درباره ما</a><?php endif ?>
       <?php if (module('contact')): ?><a href="<?= url('contact') ?>" class="<?= $isActive('/contact') ?>">تماس با ما</a><?php endif ?>
     </nav>
     <div class="header-actions">
@@ -98,6 +99,7 @@ $headerStyle = setting('theme_header', 'light');
         <?php if (module('installment')): ?><li><a href="<?= url('cars', ['installment' => 1]) ?>">خرید اقساطی</a></li><?php endif ?>
         <?php if (module('parts_shop')): ?><li><a href="<?= url('parts') ?>">فروشگاه قطعات</a></li><?php endif ?>
         <?php if (module('sell_request')): ?><li><a href="<?= url('sell') ?>">فروش خودروی شما</a></li><?php endif ?>
+        <?php if (module('service_booking')): ?><li><a href="<?= url('service') ?>">نوبت سرویس و تعمیرات</a></li><li><a href="<?= url('service/track') ?>">پیگیری نوبت</a></li><?php endif ?>
       </ul>
     </div>
     <div>

@@ -149,9 +149,10 @@ body{background-image:
 .gallery-main{overflow:hidden}
 .gallery-main img{transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
 .gallery-main:hover img{transform:scale(1.05)}
-.buy-card,.side-card,.price-card{position:relative}
-.buy-card::before,.side-card::before,.price-card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;z-index:-1;
-  background:conic-gradient(from var(--ang,0deg),var(--amber),var(--copper),var(--dusk),transparent 40%,var(--amber));animation:spinAng 6s linear infinite;opacity:.55;filter:blur(6px)}
+.side-card{border:1.5px solid transparent!important;
+  background:linear-gradient(var(--surface),var(--surface)) padding-box,
+    conic-gradient(from var(--ang,0deg),var(--amber),var(--copper),var(--dusk),color-mix(in oklab,var(--line) 70%,transparent) 40%,var(--amber)) border-box!important;
+  animation:spinAng 6s linear infinite;box-shadow:0 20px 50px -30px rgb(255 122 61/.45)}
 @property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
 @keyframes spinAng{to{--ang:360deg}}
 
@@ -162,13 +163,12 @@ body{background-image:
 /* ---------- reduced motion: keep the warmth, drop the movement ---------- */
 @media (prefers-reduced-motion:reduce){
   .trails,.dust,.spot{display:none}
-  .marquee-track,.cat,.road .lane,.road-car,.road-car .wh,.road-car .beam,.buy-card::before,.side-card::before,.price-card::before{animation:none}
+  .marquee-track,.cat,.road .lane,.road-car,.road-car .wh,.road-car .beam,.side-card{animation:none}
   .showroom .slide-title,.showroom .hero-static h1{animation:none;background-position:50% 0}
   .fx-ready .fx-reveal{opacity:1;transform:none;filter:none}
   .car-card:hover{transform:translateY(-4px)}
   .process::before{transform:scaleX(1)}.fx-ready .process:not(.is-in) .pn{transform:none}
 }
-.side-card{isolation:isolate}
 
 /* topbar picks up the evening light */
 .topbar{background:linear-gradient(90deg,var(--plum),color-mix(in oklab,var(--primary) 85%,var(--dusk)) 55%,color-mix(in oklab,var(--primary) 70%,#4a2a1a))!important}

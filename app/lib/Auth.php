@@ -16,6 +16,8 @@ final class Auth
         'parts'     => ['admin', 'operator'],
         'orders'    => ['admin', 'operator'],
         'requests'  => ['admin', 'operator', 'expert'],
+        'service'   => ['admin', 'operator', 'expert'],
+        'backup'    => ['admin'],
         'content'   => ['admin'],
         'settings'  => ['admin'],
         'users'     => ['admin'],

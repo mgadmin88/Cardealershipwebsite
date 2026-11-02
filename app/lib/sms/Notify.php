@@ -11,6 +11,12 @@ final class Notify
         }
     }
 
+    /** notify site admins only */
+    public static function adminEvent(string $event, string $name, string $mobile): void
+    {
+        if (module('sms')) self::admins($event, $name, $mobile);
+    }
+
     public static function request(string $type, string $name, string $mobile): void
     {
         if (!module('sms')) return;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class Schema
 {
     /** bump when tables are added — existing sites upgrade automatically on next request */
-    public const VERSION = 4;
+    public const VERSION = 5;
 
     public static function sql(): array
     {
@@ -93,6 +93,20 @@ final class Schema
               created_at $DT NULL, last_login $DT NULL)$END",
             "CREATE INDEX idx_orders_customer ON orders (customer_id)",
 
+            "CREATE TABLE IF NOT EXISTS service_types (id $ID, title VARCHAR(120) NOT NULL, description VARCHAR(500), icon VARCHAR(30),
+              price_from $BIG NULL, duration INT NOT NULL DEFAULT 60, active TINYINT NOT NULL DEFAULT 1, sort INT NOT NULL DEFAULT 0)$END",
+
+            "CREATE TABLE IF NOT EXISTS appointments (id $ID, code VARCHAR(12) NOT NULL UNIQUE, token VARCHAR(64) NOT NULL, service_type_id INT NULL,
+              customer_id INT NULL, name VARCHAR(120) NOT NULL, mobile VARCHAR(15) NOT NULL, brand_id INT NULL, model_id INT NULL, car_text VARCHAR(160),
+              year INT NULL, plate VARCHAR(30), mileage INT NULL, day VARCHAR(10) NOT NULL, slot VARCHAR(5) NOT NULL,
+              status VARCHAR(15) NOT NULL DEFAULT 'pending', note VARCHAR(1000), admin_note VARCHAR(1000), report VARCHAR(2000), cost $BIG NULL,
+              ip VARCHAR(45), created_at $DT NULL, updated_at $DT NULL, done_at $DT NULL, survey_sent TINYINT NOT NULL DEFAULT 0)$END",
+            "CREATE INDEX idx_appt_day ON appointments (day, slot, status)",
+            "CREATE INDEX idx_appt_mobile ON appointments (mobile)",
+
+            "CREATE TABLE IF NOT EXISTS surveys (id $ID, appointment_id INT NOT NULL UNIQUE, overall INT NOT NULL, quality INT NULL, timing INT NULL,
+              staff INT NULL, recommend TINYINT NULL, comment VARCHAR(2000), created_at $DT NULL)$END",
+
             "CREATE TABLE IF NOT EXISTS faqs (id $ID, question VARCHAR(255) NOT NULL, answer $TEXT, grp VARCHAR(20) DEFAULT 'general',
               sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1)$END",
 
@@ -127,6 +141,11 @@ final class Schema
         try { DB::pdo()->exec('CREATE INDEX idx_orders_customer ON orders (customer_id)'); } catch (Throwable) {}
         try { DB::val('SELECT COUNT(*) FROM customers'); DB::val('SELECT customer_id FROM orders LIMIT 1'); DB::val('SELECT customer_id FROM requests LIMIT 1'); }
         catch (Throwable $e) { app_log('error', 'schema upgrade v4 incomplete: ' . $e->getMessage()); return; }
+        // v5: service booking — default service types once
+        try {
+            DB::val('SELECT COUNT(*) FROM appointments');
+            if (!(int)DB::val('SELECT COUNT(*) FROM service_types')) Seeder::serviceTypes();
+        } catch (Throwable $e) { app_log('error', 'schema upgrade v5 incomplete: ' . $e->getMessage()); return; }
         // v3: sites still on the old default (navy, untouched colours) move to the warm "sunset" preset once
         if ((int)Settings::get('schema_version', '1') < 3 && Settings::get('theme_preset', 'navy') === 'navy'
             && in_array(Settings::get('theme_primary', ''), ['', '#1e3a5f'], true) && in_array(Settings::get('theme_accent', ''), ['', '#f7931e'], true)) {

@@ -94,6 +94,7 @@ function admin_logout(): void
 function admin_dashboard(): void
 {
     Auth::require();
+    if (Auth::can('backup')) Backup::autoDaily();
     $since = date('Y-m-d', strtotime('-29 days'));
     $s = [
         'cars' => (int)DB::val("SELECT COUNT(*) FROM cars WHERE status = 'available'"),
@@ -793,4 +794,182 @@ function admin_customer(string $id): void
     $orders = DB::all("SELECT * FROM orders WHERE {$sc[0]} ORDER BY id DESC LIMIT 100", $sc[1]);
     $requests = DB::all("SELECT * FROM requests WHERE {$sc[0]} ORDER BY id DESC LIMIT 100", $sc[1]);
     view('admin/customer', compact('c', 'orders', 'requests') + ['title' => 'مشتری: ' . ($c['name'] ?: fa($c['mobile']))]);
+}
+
+/* ---------- workshop appointments ---------- */
+function admin_appointments(): void
+{
+    Auth::require('service');
+    $view = (string)($_GET['view'] ?? 'day');
+    $day = preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)($_GET['day'] ?? '')) ? $_GET['day'] : date('Y-m-d');
+    $st = (string)($_GET['status'] ?? '');
+    $w = ['1 = 1']; $p = [];
+    if ($view === 'day') { $w[] = 'a.day = ?'; $p[] = $day; }
+    elseif ($view === 'upcoming') { $w[] = 'a.day >= ?'; $p[] = date('Y-m-d'); }
+    if (isset(Service::STATUS[$st])) { $w[] = 'a.status = ?'; $p[] = $st; }
+    if (($q = trim((string)input('q'))) !== '') { $w[] = '(a.code LIKE ? OR a.name LIKE ? OR a.mobile LIKE ? OR a.plate LIKE ?)'; $l = '%' . to_en_digits($q) . '%'; array_push($p, $l, $l, $l, $l); }
+    $order = $view === 'all' ? 'a.id DESC' : 'a.day, a.slot, a.id';
+    $rows = DB::all('SELECT a.*, t.title AS type_title FROM appointments a LEFT JOIN service_types t ON t.id = a.service_type_id WHERE ' . implode(' AND ', $w) . " ORDER BY $order LIMIT 500", $p);
+    $pending = (int)DB::val("SELECT COUNT(*) FROM appointments WHERE status = 'pending' AND day >= ?", [date('Y-m-d')]);
+    $slots = $view === 'day' ? Service::slots($day) : [];
+    view('admin/appointments', compact('rows', 'view', 'day', 'st', 'pending', 'slots') + ['title' => 'نوبت‌های سرویس',
+        'actions' => '<a class="btn btn-ghost" href="' . url('admin/service-settings') . '">' . icon('gear') . ' تنظیمات نوبت‌دهی</a>']);
+}
+
+function admin_appointment(string $id): void
+{
+    Auth::require('service');
+    $a = DB::row('SELECT a.*, t.title AS type_title FROM appointments a LEFT JOIN service_types t ON t.id = a.service_type_id WHERE a.id = ?', [(int)$id]);
+    if (!$a) abort(404);
+    if (is_post()) {
+        $act = (string)input('action');
+        $note = mb_substr(trim((string)input('admin_note')), 0, 1000);
+        $notify = !empty($_POST['notify']);
+        $d = ['admin_note' => $note, 'updated_at' => now()];
+        $event = null;
+        switch ($act) {
+            case 'confirm': $d['status'] = 'confirmed'; $event = 'confirmed'; break;
+            case 'reject': $d['status'] = 'rejected'; $event = 'rejected'; break;
+            case 'start': $d['status'] = 'in_progress'; break;
+            case 'no_show': $d['status'] = 'no_show'; break;
+            case 'cancel': $d['status'] = 'cancelled'; $event = 'cancelled'; break;
+            case 'done':
+                $d['status'] = 'done'; $d['done_at'] = now(); $event = 'done';
+                $d['report'] = mb_substr(trim((string)input('report')), 0, 2000);
+                $d['cost'] = input('cost') === '' ? null : max(0, input_int('cost'));
+                break;
+            case 'move':
+                $day = (string)input('day'); $slot = to_en_digits((string)input('slot'));
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $day) || !preg_match('/^\d{2}:\d{2}$/', $slot)) { flash('error', 'روز یا ساعت معتبر نیست.'); redirect('admin/appointments/' . $a['id']); }
+                $d['day'] = $day; $d['slot'] = $slot; $event = 'moved';
+                if (in_array($a['status'], ['rejected', 'cancelled', 'no_show'], true)) $d['status'] = 'confirmed';
+                break;
+            case 'note': break;
+            default: abort(400);
+        }
+        DB::update('appointments', $d, 'id = ?', [$a['id']]);
+        $a2 = DB::find('appointments', (int)$a['id']);
+        if ($notify && $event) Service::notify($a2, $event);
+        if ($act === 'done' && module('surveys') && !(int)$a['survey_sent'] && $notify) { Service::notify($a2, 'survey'); DB::update('appointments', ['survey_sent' => 1], 'id = ?', [$a['id']]); }
+        log_activity('appointment.' . $act, $a['code']);
+        flash('success', 'نوبت به‌روزرسانی شد' . ($notify && $event && module('sms') ? ' و به مشتری پیامک شد.' : '.'));
+        redirect('admin/appointments/' . $a['id']);
+    }
+    $survey = DB::row('SELECT * FROM surveys WHERE appointment_id = ?', [$a['id']]);
+    $history = DB::all('SELECT a.code, a.day, a.slot, a.status, t.title AS type_title, a.id FROM appointments a LEFT JOIN service_types t ON t.id = a.service_type_id
+        WHERE a.mobile = ? AND a.id <> ? ORDER BY a.day DESC LIMIT 10', [$a['mobile'], $a['id']]);
+    view('admin/appointment', compact('a', 'survey', 'history') + ['title' => 'نوبت ' . $a['code']]);
+}
+
+function admin_service_settings(): void
+{
+    Auth::require('settings');
+    if (is_post()) {
+        $act = (string)input('action');
+        if ($act === 'schedule') {
+            $days = array_values(array_intersect(array_map('intval', (array)($_POST['days'] ?? [])), [0, 1, 2, 3, 4, 5, 6]));
+            Settings::setMany([
+                'svc_days' => implode(',', $days), 'svc_start' => (string)input('start'), 'svc_end' => (string)input('end'), 'svc_thu_end' => (string)input('thu_end'),
+                'svc_slot' => (string)max(15, min(240, input_int('slot'))), 'svc_capacity' => (string)max(1, min(50, input_int('capacity'))),
+                'svc_ahead' => (string)max(1, min(60, input_int('ahead'))), 'svc_notice' => (string)max(0, min(72, input_int('notice'))),
+                'svc_cancel_hours' => (string)max(0, min(72, input_int('cancel_hours'))), 'svc_holidays' => mb_substr((string)input('holidays'), 0, 5000),
+            ]);
+            flash('success', 'برنامه نوبت‌دهی ذخیره شد.');
+        } elseif ($act === 'type') {
+            $d = ['title' => mb_substr(trim((string)input('title')), 0, 120), 'description' => mb_substr(trim((string)input('description')), 0, 500),
+                'icon' => preg_match('/^[a-z-]{2,20}$/', (string)input('icon')) ? input('icon') : 'wrench',
+                'price_from' => input('price_from') === '' ? null : max(0, input_int('price_from')), 'duration' => max(15, min(600, input_int('duration') ?: 60)),
+                'active' => !empty($_POST['active']) ? 1 : 0, 'sort' => input_int('sort')];
+            if ($d['title'] === '') flash('error', 'عنوان خدمت را وارد کنید.');
+            elseif ($tid = input_int('id')) { DB::update('service_types', $d, 'id = ?', [$tid]); flash('success', 'خدمت ذخیره شد.'); }
+            else { DB::insert('service_types', $d); flash('success', 'خدمت جدید اضافه شد.'); }
+        } elseif ($act === 'delete_type') {
+            $tid = input_int('id');
+            if (DB::val('SELECT 1 FROM appointments WHERE service_type_id = ?', [$tid])) { DB::update('service_types', ['active' => 0], 'id = ?', [$tid]); flash('success', 'این خدمت نوبت ثبت‌شده دارد؛ غیرفعال شد.'); }
+            else { DB::delete('service_types', 'id = ?', [$tid]); flash('success', 'خدمت حذف شد.'); }
+        }
+        log_activity('service.settings', $act);
+        redirect('admin/service-settings');
+    }
+    $types = DB::all('SELECT * FROM service_types ORDER BY sort, id');
+    view('admin/service_settings', ['types' => $types, 'cfg' => Service::cfg(), 'title' => 'تنظیمات نوبت‌دهی']);
+}
+
+function admin_surveys(): void
+{
+    Auth::require('service');
+    $rows = DB::all('SELECT s.*, a.code, a.name, a.mobile, a.id AS aid, a.car_text, t.title AS type_title FROM surveys s JOIN appointments a ON a.id = s.appointment_id
+        LEFT JOIN service_types t ON t.id = a.service_type_id ORDER BY s.id DESC LIMIT 300');
+    $avg = DB::row('SELECT COUNT(*) n, AVG(overall) overall, AVG(quality) quality, AVG(timing) timing, AVG(staff) staff, AVG(recommend) recommend FROM surveys');
+    $sent = (int)DB::val('SELECT COUNT(*) FROM appointments WHERE survey_sent = 1');
+    view('admin/surveys', compact('rows', 'avg', 'sent') + ['title' => 'نظرسنجی مشتریان']);
+}
+
+
+/* ---------- backup & restore ---------- */
+function admin_backup(): void
+{
+    Auth::require('backup');
+    if (is_post()) {
+        $act = (string)input('action');
+        $pwOk = fn() => password_verify((string)($_POST['password'] ?? ''), Auth::user()['password']);
+        try {
+            if ($act === 'create') {
+                $name = Backup::create(!empty($_POST['uploads']));
+                log_activity('backup.create', $name);
+                flash('success', 'فایل پشتیبان ساخته شد: ' . $name);
+            } elseif ($act === 'auto') {
+                Settings::set('backup_auto', !empty($_POST['auto']) ? '1' : '0');
+                flash('success', 'تنظیم پشتیبان خودکار ذخیره شد.');
+            } elseif ($act === 'delete') {
+                if (!$pwOk()) throw new RuntimeException('رمز عبور مدیر اشتباه است.');
+                $p = Backup::path((string)input('name'));
+                if ($p) { @unlink($p); log_activity('backup.delete', basename($p)); flash('success', 'فایل پشتیبان حذف شد.'); }
+            } elseif ($act === 'restore' || $act === 'restore_upload') {
+                if (!$pwOk()) throw new RuntimeException('رمز عبور مدیر اشتباه است.');
+                if ($act === 'restore') {
+                    $file = Backup::path((string)input('name'));
+                    if (!$file) throw new RuntimeException('فایل پشتیبان پیدا نشد.');
+                } else {
+                    $f = $_FILES['file'] ?? null;
+                    if (!$f || $f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) throw new RuntimeException('فایل پشتیبان بارگذاری نشد. حجم فایل را با محدودیت آپلود هاست مقایسه کنید.');
+                    $ext = preg_match('/\.json\.gz$/i', $f['name']) ? 'json.gz' : strtolower(pathinfo($f['name'], PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['zip', 'json.gz', 'json'], true)) throw new RuntimeException('فقط فایل‌های پشتیبان zip یا json.gz این سایت قابل بازیابی هستند.');
+                    $file = Backup::dir() . '/backup-' . date('Ymd-His') . '-uploaded-' . bin2hex(random_bytes(3)) . '.' . $ext;
+                    move_uploaded_file($f['tmp_name'], $file);
+                }
+                $safety = Backup::create(!empty($_POST['uploads']), 'safety');     // undo point
+                $uid = Auth::id();
+                $r = Backup::restore($file, !empty($_POST['uploads']));
+                log_activity('backup.restore', basename($file) . ' (safety: ' . $safety . ')');
+                $msg = 'بازیابی انجام شد: ' . fa($r['tables']) . ' جدول، ' . fa(num($r['rows'])) . ' رکورد' . ($r['files'] ? '، ' . fa(num($r['files'])) . ' فایل تصویر' : '')
+                    . '. نسخه قبل از بازیابی هم با نام ' . $safety . ' ذخیره شد.';
+                // the restored users table may not contain the current session's account
+                if (!DB::val('SELECT 1 FROM users WHERE id = ?', [$uid])) { Auth::logout(); flash('success', $msg . ' لطفاً با حساب نسخه بازیابی‌شده وارد شوید.'); redirect('admin/login'); }
+                flash('success', $msg);
+            }
+        } catch (Throwable $e) {
+            app_log('error', 'backup ' . $act . ': ' . $e->getMessage());
+            flash('error', $e instanceof RuntimeException ? $e->getMessage() : 'عملیات ناموفق بود: ' . $e->getMessage());
+        }
+        redirect('admin/backup');
+    }
+    view('admin/backup', ['files' => Backup::list(), 'zip' => Backup::zipAvailable(), 'title' => 'پشتیبان‌گیری و بازیابی',
+        'uploadMax' => ini_get('upload_max_filesize'), 'auto' => setting('backup_auto', '1') === '1']);
+}
+
+function admin_backup_download(): void
+{
+    Auth::require('backup');
+    $name = (string)($_GET['f'] ?? '');
+    $p = Backup::path($name);
+    if (!$p) abort(404);
+    log_activity('backup.download', $name);
+    while (ob_get_level()) ob_end_clean();
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="' . basename($p) . '"');
+    header('Content-Length: ' . filesize($p));
+    header('X-Content-Type-Options: nosniff');
+    readfile($p);
+    exit;
 }

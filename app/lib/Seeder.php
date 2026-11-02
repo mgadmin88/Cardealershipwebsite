@@ -49,6 +49,7 @@ final class Seeder
             }
             if (!DB::val('SELECT COUNT(*) FROM brands')) self::brands();
             if (!DB::val('SELECT COUNT(*) FROM gateways')) self::gateways();
+            if (!DB::val('SELECT COUNT(*) FROM service_types')) self::serviceTypes();
             if (!DB::val('SELECT COUNT(*) FROM pages')) self::pages();
             if (!DB::val('SELECT COUNT(*) FROM faqs')) self::faqs();
             if (!DB::val('SELECT COUNT(*) FROM part_categories')) self::partCategories();
@@ -224,6 +225,23 @@ final class Seeder
             $file = "demo/slide$i.svg";
             file_put_contents(PUB . '/uploads/' . $file, DemoArt::car(['#e5e7eb', '#f7931e', '#9ca3af'][$i], $type, 1));
             DB::insert('slides', ['title' => $t, 'subtitle' => $st, 'image' => $file, 'btn_text' => $bt, 'btn_link' => $bl, 'align' => 'right', 'sort' => $i, 'active' => 1]);
+        }
+    }
+
+    /** default workshop services (editable in admin → نوبت‌دهی → تنظیمات) */
+    public static function serviceTypes(): void
+    {
+        $list = [
+            ['سرویس دوره‌ای', 'تعویض روغن موتور، فیلتر روغن، فیلتر هوا و بازدید کامل فنی طبق دفترچه سرویس', 'wrench', 1500000, 90],
+            ['تعویض روغن و فیلتر', 'تعویض روغن موتور و فیلتر روغن با روغن اصل', 'drop', 900000, 30],
+            ['تعمیرات مکانیکی', 'عیب‌یابی و تعمیر موتور، گیربکس، جلوبندی و سیستم ترمز', 'engine', null, 120],
+            ['برق و دیاگ خودرو', 'عیب‌یابی با دستگاه دیاگ، تعمیر سیستم برق، باتری و استارت', 'bolt', 500000, 60],
+            ['صافکاری و نقاشی', 'برآورد هزینه و انجام صافکاری بدون رنگ، صافکاری و نقاشی قطعات', 'paint', null, 60],
+            ['لاستیک، بالانس و تنظیم فرمان', 'تعویض لاستیک، بالانس چرخ و تنظیم زوایای فرمان', 'wheel', 600000, 60],
+            ['کارشناسی خودرو', 'کارشناسی فنی و بدنه پیش از خرید یا فروش خودرو', 'shield', 800000, 60],
+        ];
+        foreach ($list as $i => [$t, $d, $ic, $p, $dur]) {
+            DB::insert('service_types', ['title' => $t, 'description' => $d, 'icon' => $ic, 'price_from' => $p, 'duration' => $dur, 'active' => 1, 'sort' => $i]);
         }
     }
 }

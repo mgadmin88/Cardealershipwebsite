@@ -20,6 +20,7 @@ function account_view(string $tpl, array $data, string $title): void
     $data['counts'] = [
         'orders' => (int)DB::val("SELECT COUNT(*) FROM orders WHERE $w", $p),
         'requests' => (int)DB::val("SELECT COUNT(*) FROM requests WHERE $w", $p),
+        'appts' => module('service_booking') ? (int)DB::val("SELECT COUNT(*) FROM appointments WHERE $w AND status IN ('pending','confirmed','in_progress')", $p) : 0,
     ];
     view('account/' . $tpl, $data + ['u' => $u, 'title' => $title, 'tab' => $tpl]);
 }
@@ -211,8 +212,18 @@ function account_claim(): void
     $code = preg_replace('/\D/', '', to_en_digits((string)input('code')));
     $o = $code !== '' ? DB::row('SELECT * FROM orders WHERE code = ?', [$code]) : null;
     if (!$o || $o['mobile'] !== $u['mobile']) { flash('error', 'سفارشی با این کد برای شماره موبایل شما پیدا نشد.'); redirect('account/orders'); }
-    if ($o['customer_id'] && (int)$o['customer_id'] !== (int)$u['id']) { flash('error', 'این سفارش به حساب دیگری متصل است.'); redirect('account/orders'); }
+    if ($o['customer_id'] && (int)$o['customer_id'] !== (int)$u['id'] && DB::val('SELECT 1 FROM customers WHERE id = ?', [$o['customer_id']])) { flash('error', 'این سفارش به حساب دیگری متصل است.'); redirect('account/orders'); }
     DB::update('orders', ['customer_id' => $u['id']], 'id = ?', [$o['id']]);
     flash('success', 'سفارش ' . fa($o['code']) . ' به حساب شما اضافه شد.');
     redirect('account/orders/' . $o['code']);
+}
+
+function account_appointments(): void
+{
+    account_guard();
+    require_module('service_booking');
+    [$w, $p] = Customer::scope('a');
+    $rows = DB::all("SELECT a.*, t.title AS type_title, t.icon AS type_icon, (SELECT 1 FROM surveys s WHERE s.appointment_id = a.id) AS surveyed
+        FROM appointments a LEFT JOIN service_types t ON t.id = a.service_type_id WHERE $w ORDER BY a.day DESC, a.slot DESC LIMIT 200", $p);
+    account_view('appointments', compact('rows'), 'نوبت‌های من');
 }

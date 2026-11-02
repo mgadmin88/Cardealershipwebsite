@@ -72,7 +72,7 @@
     if (!ms) return;
     const load = async (keep) => {
       const first = ms.options[0].outerHTML;
-      if (!bs.value) { ms.innerHTML = first; return; }
+      if (!bs.value || bs.value === 'other') { ms.innerHTML = first; return; }
       ms.disabled = true;
       try {
         const r = await fetch(url('api/models?brand=' + encodeURIComponent(bs.value)));
@@ -348,4 +348,50 @@
     requestAnimationFrame(step);
   }), { threshold: .6 });
   els.forEach(e => io.observe(e));
+})();
+
+/* ---------- confirm before destructive submits ---------- */
+document.addEventListener('submit', e => {
+  const f = e.target.closest('form[data-confirm]');
+  if (f && !confirm(f.dataset.confirm)) e.preventDefault();
+}, true);
+
+/* ---------- service booking: free slots per day + live summary ---------- */
+(() => {
+  const form = document.querySelector('[data-svc-form]');
+  if (!form) return;
+  const base = (JSON.parse(document.getElementById('app-config')?.textContent || '{}').base || '');
+  const box = form.querySelector('[data-slots]');
+  const sum = k => form.querySelector(`[data-sum="${k}"]`);
+  const oldSlot = form.dataset.oldSlot || '';
+  const setSum = () => {
+    const t = form.querySelector('input[name=type]:checked'); sum('type').textContent = t ? t.dataset.title : '—';
+    const d = form.querySelector('input[name=day]:checked');
+    sum('day').textContent = d ? [...d.nextElementSibling.querySelectorAll('small,b')].map(x => x.textContent).join(' ') : '—';
+    const s = form.querySelector('input[name=slot]:checked'); sum('slot').textContent = s ? s.nextElementSibling.textContent.split(' ')[0] : '—';
+  };
+  const load = async day => {
+    box.innerHTML = '<p class="muted small">در حال بارگذاری ساعت‌های آزاد…</p>';
+    try {
+      const r = await fetch(base + '/api/slots?day=' + encodeURIComponent(day), { headers: { Accept: 'application/json' } });
+      const { slots } = await r.json();
+      if (!slots.length) { box.innerHTML = '<p class="muted small">برای این روز ساعت آزادی باقی نمانده است. روز دیگری را انتخاب کنید.</p>'; setSum(); return; }
+      box.innerHTML = '<div class="svc-slot-grid" role="radiogroup" aria-label="ساعت مراجعه">' + slots.map(s =>
+        `<label class="svc-slot${s.left ? '' : ' full'}"><input type="radio" name="slot" value="${s.t}" required ${s.left ? '' : 'disabled'}><span>${s.fa}${s.left ? '' : ' <small>تکمیل</small>'}</span></label>`).join('') + '</div>';
+      if (oldSlot) { const x = box.querySelector(`input[value="${oldSlot}"]:not(:disabled)`); if (x) x.checked = true; }
+    } catch { box.innerHTML = '<p class="muted small">بارگذاری ساعت‌ها ممکن نشد. صفحه را دوباره باز کنید.</p>'; }
+    setSum();
+  };
+  // brand not in the list → free-text car name instead of the model select
+  const brandSel = form.querySelector('[name=brand_id]'), carText = form.querySelector('[data-car-text]'), modelField = form.querySelector('[data-model-field]');
+  const syncCar = () => { if (!brandSel || !carText) return; const other = brandSel.value === 'other';
+    carText.hidden = !other; carText.querySelector('input').required = other; if (modelField) modelField.hidden = other; };
+  brandSel?.addEventListener('change', syncCar); syncCar();
+  form.addEventListener('change', e => {
+    if (e.target.name === 'day') load(e.target.value);
+    setSum();
+  });
+  const checked = form.querySelector('input[name=day]:checked');
+  if (checked) load(checked.value);
+  setSum();
 })();

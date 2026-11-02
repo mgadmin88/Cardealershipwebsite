@@ -74,7 +74,7 @@ final class Captcha
             imagecolortransparent($g, $bg);
             $col = imagecolorallocate($g, random_int(10, 70), random_int(20, 80), random_int(80, 150));
             imagestring($g, 5, 2, 1, $ch, $col);
-            $r = imagerotate($g, random_int(-22, 22), $bg);
+            $r = imagerotate($g, random_int(-10, 10), $bg);
             imagecolortransparent($r, $bg);
             $sw = imagesx($r); $sh = imagesy($r);
             $scale = random_int(185, 215) / 100;

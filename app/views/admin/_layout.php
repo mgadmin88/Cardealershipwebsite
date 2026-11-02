@@ -4,14 +4,17 @@ $p = '/' . trim(substr(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), 
 $on = fn($x) => ($x === '/admin' ? $p === '/admin' : str_starts_with($p, $x)) ? ' class="on"' : '';
 $newReq = (int)DB::val("SELECT COUNT(*) FROM requests WHERE status = 'new'");
 $newOrd = (int)DB::val("SELECT COUNT(*) FROM orders WHERE status = 'paid'");
+$newAppt = 0;
+try { $newAppt = (int)DB::val("SELECT COUNT(*) FROM appointments WHERE status = 'pending' AND day >= ?", [date('Y-m-d')]); } catch (Throwable) {}
 $menu = [
     ['', [['/admin', 'grid', 'داشبورد', '']]],
     ['خودروها', [['/admin/cars', 'car', 'مدیریت خودروها', 'cars'], ['/admin/brands', 'tag', 'برندها و مدل‌ها', 'cars']]],
     ['فروشگاه', [['/admin/orders', 'cart', 'سفارش‌ها', 'orders', $newOrd], ['/admin/customers', 'users', 'مشتریان', 'orders'], ['/admin/transactions', 'card', 'تراکنش‌ها', 'orders'], ['/admin/parts', 'box', 'قطعات و آپشن‌ها', 'parts'], ['/admin/part-categories', 'layers', 'دسته‌بندی قطعات', 'parts']]],
     ['ارتباط با مشتری', [['/admin/requests', 'message', 'درخواست‌ها و پیام‌ها', 'requests', $newReq]]],
+    ['نوبت‌دهی و خدمات', module('service_booking') ? [['/admin/appointments', 'calendar', 'نوبت‌های سرویس', 'service', $newAppt], ['/admin/surveys', 'star', 'نظرسنجی مشتریان', 'service'], ['/admin/service-settings', 'wrench', 'تنظیمات نوبت‌دهی', 'settings']] : []],
     ['محتوا', [['/admin/slider', 'image', 'اسلایدر صفحه اول', 'content'], ['/admin/pages', 'doc', 'صفحات (درباره ما، قوانین)', 'content'], ['/admin/faqs', 'info', 'سوالات متداول', 'content']]],
     ['تنظیمات', [['/admin/modules', 'toggle', 'ماژول‌ها', 'settings'], ['/admin/theme', 'palette', 'تم و ظاهر سایت', 'settings'], ['/admin/settings', 'gear', 'تنظیمات عمومی', 'settings'],
-        ['/admin/payments', 'card', 'درگاه‌های پرداخت', 'settings'], ['/admin/sms', 'sms', 'پنل پیامک', 'settings'], ['/admin/users', 'users', 'کاربران و دسترسی‌ها', 'users'], ['/admin/logs', 'list', 'گزارش فعالیت‌ها', 'users']]],
+        ['/admin/payments', 'card', 'درگاه‌های پرداخت', 'settings'], ['/admin/sms', 'sms', 'پنل پیامک', 'settings'], ['/admin/users', 'users', 'کاربران و دسترسی‌ها', 'users'], ['/admin/backup', 'upload', 'پشتیبان‌گیری و بازیابی', 'backup'], ['/admin/logs', 'list', 'گزارش فعالیت‌ها', 'users']]],
 ];
 ?><!doctype html>
 <html lang="fa" dir="rtl" data-theme="light">
@@ -20,7 +23,7 @@ $menu = [
 <link rel="icon" href="<?= asset('img/favicon.svg') ?>">
 <link rel="stylesheet" href="<?= asset('css/site.css') ?>"><link rel="stylesheet" href="<?= asset('css/admin.css') ?>">
 <style><?= Theme::css() ?></style>
-<script nonce="<?= nonce() ?>">try{if(localStorage.getItem('adm-theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<script nonce="<?= nonce() ?>">try{var t=localStorage.getItem('theme')||localStorage.getItem('adm-theme');if(t==='auto')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';if(t==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
 </head>
 <body class="admin">
 <?php if (empty($bare)): ?>

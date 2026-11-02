@@ -109,15 +109,17 @@ function abort(int $code = 404, string $msg = ''): never
  * ======================================================= */
 function view(string $name, array $data = [], ?string $layout = null): void
 {
-    $file = APP . '/views/' . $name . '.php';
-    if (!is_file($file)) throw new RuntimeException("View not found: $name");
+    // decide everything up front: view files may freely use variables like $name / $layout / $file
+    $__file = APP . '/views/' . $name . '.php';
+    if (!is_file($__file)) throw new RuntimeException("View not found: $name");
+    $__layout = $layout ?? (str_starts_with($name, 'admin/') ? 'admin/_layout' : 'site/_layout');
+    unset($name, $layout);
     extract($data, EXTR_SKIP);
     ob_start();
-    require $file;
+    require $__file;
     $content = ob_get_clean();
-    if ($layout === null) $layout = str_starts_with($name, 'admin/') ? 'admin/_layout' : 'site/_layout';
-    if ($layout === '') { echo $content; return; }
-    require APP . '/views/' . $layout . '.php';
+    if ($__layout === '') { echo $content; return; }
+    require APP . '/views/' . $__layout . '.php';
 }
 
 function partial(string $name, array $data = []): void
@@ -360,4 +362,15 @@ function request_badge(string $s): string
 {
     [$l, $c] = ['new' => ['ثبت شد، در صف بررسی', 'warn'], 'seen' => ['در حال پیگیری کارشناس', 'info'], 'done' => ['انجام شد', 'ok']][$s] ?? [$s, 'info'];
     return '<span class="badge ' . $c . '">' . e($l) . '</span>';
+}
+
+/** 1-5 star radio group (RTL: first star on the right) */
+function star_input(string $name, bool $required = false): string
+{
+    $h = '<div class="stars" role="radiogroup">';
+    for ($i = 5; $i >= 1; $i--) {
+        $h .= '<input type="radio" id="' . $name . $i . '" name="' . $name . '" value="' . $i . '"' . ($required ? ' required' : '') . '>'
+            . '<label for="' . $name . $i . '" title="' . fa($i) . ' از ۵">' . icon('star') . '</label>';
+    }
+    return $h . '</div>';
 }

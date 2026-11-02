@@ -146,6 +146,21 @@
   </div>
 </section>
 
+<?php if (module('service_booking')): $svcTypes = DB::all('SELECT title, icon FROM service_types WHERE active = 1 ORDER BY sort LIMIT 6'); if ($svcTypes): ?>
+<section class="section tight">
+  <div class="container">
+    <div class="svc-band">
+      <div class="svc-band-text">
+        <h2>نوبت سرویس و تعمیرات، بدون معطلی</h2>
+        <p>روز و ساعت مراجعه را آنلاین انتخاب کنید؛ تأیید نوبت و گزارش کار را پیامک می‌کنیم.</p>
+        <div class="flex"><a href="<?= url('service') ?>" class="btn btn-accent btn-lg"><?= icon('calendar') ?> گرفتن نوبت</a><a href="<?= url('service/track') ?>" class="btn btn-ghost-light">پیگیری نوبت</a></div>
+      </div>
+      <ul class="svc-band-list"><?php foreach ($svcTypes as $t): ?><li><?= icon($t['icon'] ?: 'wrench') ?><span><?= e($t['title']) ?></span></li><?php endforeach ?></ul>
+    </div>
+  </div>
+</section>
+<?php endif; endif ?>
+
 <?php if (module('stats')): $stats = Settings::json('stats'); if ($stats): ?>
 <section class="section tight">
   <div class="container"><div class="stats showroom-band"><div class="tubes lit" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><?php foreach ($stats as [$n, $l]): ?><div><b data-count="<?= e($n) ?>"><?= e($n) ?></b><span><?= e($l) ?></span></div><?php endforeach ?></div></div>
