@@ -18,6 +18,7 @@ final class Orders
     public static function canView(array $order): bool
     {
         if (!empty($_SESSION['orders'][$order['code']])) return true;
+        if (Customer::enabled() && Customer::owns($order)) return true;
         $t = (string)($_GET['t'] ?? '');
         return $t !== '' && hash_equals((string)$order['track_token'], $t);
     }

@@ -1,3 +1,4 @@
+<?php $pf = Customer::enabled() ? (Customer::user() ?? []) : []; ?>
 <?php $isCar = !empty($car); $bankInitial = fn($b) => mb_substr($b, 0, 1); ?>
 <div class="container">
   <nav class="crumbs"><a href="<?= url('/') ?>">خانه</a><?= icon('chev-left') ?><?php if ($isCar): ?><a href="<?= url('car/' . $car['id']) ?>"><?= e(Cars::title($car)) ?></a><?php else: ?><a href="<?= url('cart') ?>">سبد خرید</a><?php endif ?><?= icon('chev-left') ?><span>تکمیل خرید</span></nav>
@@ -8,15 +9,15 @@
       <section class="card card-pad mb-2">
         <h2 class="card-title">اطلاعات خریدار</h2>
         <div class="form-grid">
-          <div class="field"><label>نام و نام خانوادگی *</label><input name="name" required value="<?= e(old('name')) ?>" autocomplete="name"></div>
-          <div class="field"><label>شماره موبایل *</label><input name="mobile" required class="ltr" inputmode="tel" placeholder="09xxxxxxxxx" value="<?= e(old('mobile')) ?>" autocomplete="tel"></div>
-          <div class="field"><label>کد ملی <?= $isCar ? '*' : '' ?></label><input name="national_code" class="ltr" inputmode="numeric" maxlength="10" value="<?= e(old('national_code')) ?>" <?= $isCar ? 'required' : '' ?>></div>
-          <div class="field"><label>ایمیل</label><input type="email" name="email" class="ltr" value="<?= e(old('email')) ?>" autocomplete="email"></div>
+          <div class="field"><label>نام و نام خانوادگی *</label><input name="name" required value="<?= e(old('name', $pf['name'] ?? '')) ?>" autocomplete="name"></div>
+          <div class="field"><label>شماره موبایل *</label><input name="mobile" required class="ltr" inputmode="tel" placeholder="09xxxxxxxxx" value="<?= e(old('mobile', $pf['mobile'] ?? '')) ?>" autocomplete="tel"></div>
+          <div class="field"><label>کد ملی <?= $isCar ? '*' : '' ?></label><input name="national_code" class="ltr" inputmode="numeric" maxlength="10" value="<?= e(old('national_code', $pf['national_code'] ?? '')) ?>" <?= $isCar ? 'required' : '' ?>></div>
+          <div class="field"><label>ایمیل</label><input type="email" name="email" class="ltr" value="<?= e(old('email', $pf['email'] ?? '')) ?>" autocomplete="email"></div>
           <?php if (!$isCar): ?>
-            <div class="field"><label>استان</label><input name="province" value="<?= e(old('province')) ?>"></div>
-            <div class="field"><label>شهر *</label><input name="city" required value="<?= e(old('city')) ?>"></div>
-            <div class="field full"><label>آدرس کامل *</label><textarea name="address" required rows="2"><?= e(old('address')) ?></textarea></div>
-            <div class="field"><label>کد پستی</label><input name="postal_code" class="ltr" inputmode="numeric" maxlength="10" value="<?= e(old('postal_code')) ?>"></div>
+            <div class="field"><label>استان</label><input name="province" value="<?= e(old('province', $pf['province'] ?? '')) ?>"></div>
+            <div class="field"><label>شهر *</label><input name="city" required value="<?= e(old('city', $pf['city'] ?? '')) ?>"></div>
+            <div class="field full"><label>آدرس کامل *</label><textarea name="address" required rows="2"><?= e(old('address', $pf['address'] ?? '')) ?></textarea></div>
+            <div class="field"><label>کد پستی</label><input name="postal_code" class="ltr" inputmode="numeric" maxlength="10" value="<?= e(old('postal_code', $pf['postal_code'] ?? '')) ?>"></div>
           <?php endif ?>
           <div class="field full"><label>توضیحات سفارش</label><textarea name="note" rows="2"><?= e(old('note')) ?></textarea></div>
         </div>

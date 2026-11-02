@@ -354,3 +354,10 @@ function icon(string $name, string $cls = ''): string
 
 function selected(mixed $a, mixed $b): string { return (string)$a === (string)$b ? ' selected' : ''; }
 function checked(mixed $v): string { return $v ? ' checked' : ''; }
+
+/** request status label for buyers */
+function request_badge(string $s): string
+{
+    [$l, $c] = ['new' => ['ثبت شد، در صف بررسی', 'warn'], 'seen' => ['در حال پیگیری کارشناس', 'info'], 'done' => ['انجام شد', 'ok']][$s] ?? [$s, 'info'];
+    return '<span class="badge ' . $c . '">' . e($l) . '</span>';
+}

@@ -16,6 +16,7 @@ $isAdmin = str_starts_with($path, '/admin');
 require APP . '/controllers/site.php';
 require APP . '/controllers/shop.php';
 require APP . '/controllers/payment.php';
+if (str_starts_with($path, '/account')) require APP . '/controllers/account.php';
 if ($isAdmin) require APP . '/controllers/admin.php';
 
 /* ---------- Global CSRF for every POST (payment callbacks from banks are exempt) ---------- */

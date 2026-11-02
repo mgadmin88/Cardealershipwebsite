@@ -759,3 +759,38 @@ function admin_logs(): void
     Auth::require('users');
     view('admin/logs', ['rows' => DB::all('SELECT l.*, u.username FROM activity_log l LEFT JOIN users u ON u.id = l.user_id ORDER BY l.id DESC LIMIT 300'), 'title' => 'گزارش فعالیت‌ها']);
 }
+
+
+/* ---------- buyer accounts ---------- */
+function admin_customers(): void
+{
+    Auth::require('orders');
+    $w = ['1 = 1']; $p = [];
+    if (($q = trim((string)input('q'))) !== '') {
+        $w[] = '(c.name LIKE ? OR c.mobile LIKE ? OR c.national_code LIKE ?)';
+        $like = '%' . to_en_digits($q) . '%'; array_push($p, $like, $like, $like);
+    }
+    $rows = DB::all('SELECT c.*, (SELECT COUNT(*) FROM orders o WHERE o.customer_id = c.id OR (c.verified = 1 AND o.mobile = c.mobile)) AS orders_count,
+        (SELECT COALESCE(SUM(o.paid_amount),0) FROM orders o WHERE o.customer_id = c.id OR (c.verified = 1 AND o.mobile = c.mobile)) AS paid
+        FROM customers c WHERE ' . implode(' AND ', $w) . ' ORDER BY c.id DESC LIMIT 300', $p);
+    view('admin/customers', ['rows' => $rows, 'title' => 'مشتریان']);
+}
+
+function admin_customer(string $id): void
+{
+    Auth::require('orders');
+    $c = DB::find('customers', (int)$id);
+    if (!$c) abort(404);
+    if (is_post()) {
+        $act = (string)input('action');
+        if ($act === 'toggle') DB::update('customers', ['active' => (int)$c['active'] ? 0 : 1], 'id = ?', [$c['id']]);
+        if ($act === 'verify') DB::update('customers', ['verified' => 1], 'id = ?', [$c['id']]);
+        log_activity('customer.' . $act, '#' . $c['id']);
+        flash('success', 'حساب مشتری به‌روزرسانی شد.');
+        redirect('admin/customers/' . $c['id']);
+    }
+    $sc = (int)$c['verified'] ? ['(customer_id = ? OR mobile = ?)', [$c['id'], $c['mobile']]] : ['customer_id = ?', [$c['id']]];
+    $orders = DB::all("SELECT * FROM orders WHERE {$sc[0]} ORDER BY id DESC LIMIT 100", $sc[1]);
+    $requests = DB::all("SELECT * FROM requests WHERE {$sc[0]} ORDER BY id DESC LIMIT 100", $sc[1]);
+    view('admin/customer', compact('c', 'orders', 'requests') + ['title' => 'مشتری: ' . ($c['name'] ?: fa($c['mobile']))]);
+}

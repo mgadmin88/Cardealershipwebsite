@@ -99,6 +99,7 @@ function store_request(string $type, array $extra = [], ?int $carId = null): ?st
         'type' => $type, 'name' => $name, 'mobile' => $mobile, 'car_id' => $carId,
         'data' => json_encode($extra, JSON_UNESCAPED_UNICODE), 'message' => mb_substr((string)input('message'), 0, 2000),
         'status' => 'new', 'ip' => client_ip(), 'created_at' => now(),
+        'customer_id' => Customer::enabled() ? Customer::id() : null,
     ]);
     Notify::request($type, $name, $mobile);
     return '';

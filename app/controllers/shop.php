@@ -74,6 +74,7 @@ function customer_input(bool $needAddress): array
         'address' => mb_substr((string)input('address'), 0, 500),
         'postal_code' => preg_replace('/\D/', '', to_en_digits((string)input('postal_code'))),
         'note' => mb_substr((string)input('note'), 0, 1000),
+        'customer_id' => Customer::enabled() ? Customer::id() : null,
     ];
     if (mb_strlen($d['customer_name']) < 3) return [$d, 'نام و نام خانوادگی را کامل وارد کنید.'];
     if (!valid_mobile($d['mobile'])) return [$d, 'شماره موبایل معتبر نیست.'];
@@ -82,6 +83,18 @@ function customer_input(bool $needAddress): array
     if ($needAddress && $d['postal_code'] !== '' && strlen($d['postal_code']) !== 10) return [$d, 'کد پستی باید ۱۰ رقم باشد.'];
     if (empty($_POST['terms'])) return [$d, 'لطفاً قوانین و مقررات را بپذیرید.'];
     return [$d, null];
+}
+
+/** fill empty profile fields of a logged-in buyer from what they just typed at checkout */
+function customer_remember(array $d): void
+{
+    $u = Customer::enabled() ? Customer::user() : null;
+    if (!$u) return;
+    $map = ['name' => $d['customer_name'], 'email' => $d['email'], 'national_code' => $d['national_code'], 'province' => $d['province'],
+        'city' => $d['city'], 'address' => $d['address'], 'postal_code' => $d['postal_code']];
+    $upd = [];
+    foreach ($map as $k => $v) if ((string)($u[$k] ?? '') === '' && (string)$v !== '') $upd[$k] = $v;
+    if ($upd) DB::update('customers', $upd, 'id = ?', [$u['id']]);
 }
 
 function chosen_gateway(): ?int
@@ -116,6 +129,7 @@ function shop_checkout(): void
         clear_old();
         unset($_SESSION['cart']);
         Orders::grant($order);
+        customer_remember($d);
         Notify::orderCreated($order);
         if ($gid) redirect('pay/' . $order['code'] . '?gw=' . $gid);
         redirect(Orders::link($order));
@@ -149,6 +163,7 @@ function shop_buy_car(string $id): void
         $order = DB::find('orders', $oid);
         clear_old();
         Orders::grant($order);
+        customer_remember($d);
         Notify::orderCreated($order);
         if ($gid) redirect('pay/' . $order['code'] . '?gw=' . $gid);
         redirect(Orders::link($order));

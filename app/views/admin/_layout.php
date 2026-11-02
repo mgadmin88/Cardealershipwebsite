@@ -7,7 +7,7 @@ $newOrd = (int)DB::val("SELECT COUNT(*) FROM orders WHERE status = 'paid'");
 $menu = [
     ['', [['/admin', 'grid', 'داشبورد', '']]],
     ['خودروها', [['/admin/cars', 'car', 'مدیریت خودروها', 'cars'], ['/admin/brands', 'tag', 'برندها و مدل‌ها', 'cars']]],
-    ['فروشگاه', [['/admin/orders', 'cart', 'سفارش‌ها', 'orders', $newOrd], ['/admin/transactions', 'card', 'تراکنش‌ها', 'orders'], ['/admin/parts', 'box', 'قطعات و آپشن‌ها', 'parts'], ['/admin/part-categories', 'layers', 'دسته‌بندی قطعات', 'parts']]],
+    ['فروشگاه', [['/admin/orders', 'cart', 'سفارش‌ها', 'orders', $newOrd], ['/admin/customers', 'users', 'مشتریان', 'orders'], ['/admin/transactions', 'card', 'تراکنش‌ها', 'orders'], ['/admin/parts', 'box', 'قطعات و آپشن‌ها', 'parts'], ['/admin/part-categories', 'layers', 'دسته‌بندی قطعات', 'parts']]],
     ['ارتباط با مشتری', [['/admin/requests', 'message', 'درخواست‌ها و پیام‌ها', 'requests', $newReq]]],
     ['محتوا', [['/admin/slider', 'image', 'اسلایدر صفحه اول', 'content'], ['/admin/pages', 'doc', 'صفحات (درباره ما، قوانین)', 'content'], ['/admin/faqs', 'info', 'سوالات متداول', 'content']]],
     ['تنظیمات', [['/admin/modules', 'toggle', 'ماژول‌ها', 'settings'], ['/admin/theme', 'palette', 'تم و ظاهر سایت', 'settings'], ['/admin/settings', 'gear', 'تنظیمات عمومی', 'settings'],

@@ -65,7 +65,11 @@ $headerStyle = setting('theme_header', 'light');
       <?php if (module('favorites')): ?><a href="<?= url('favorites') ?>" class="icon-btn hide-m" aria-label="علاقه‌مندی‌ها"><?= icon('heart') ?><span class="count" data-fav-count></span></a><?php endif ?>
       <?php if (module('compare')): ?><a href="<?= url('compare') ?>" class="icon-btn hide-m" aria-label="مقایسه" data-compare-link><?= icon('compare') ?><span class="count" data-cmp-count></span></a><?php endif ?>
       <?php if (module('parts_shop')): ?><a href="<?= url('cart') ?>" class="icon-btn" aria-label="سبد خرید"><?= icon('cart') ?><span class="count" data-n="<?= $cartCount ?>"><?= $cartCount ?: '' ?></span></a><?php endif ?>
-      <a href="tel:<?= e(preg_replace('/\D/', '', setting('phone'))) ?>" class="btn btn-accent hide-m"><?= icon('phone') ?> مشاوره خرید</a>
+      <?php if (Customer::enabled()): $cu = Customer::user(); ?>
+        <a href="<?= url($cu ? 'account' : 'account/login') ?>" class="acc-btn<?= $cu ? ' in' : '' ?>" aria-label="<?= $cu ? 'حساب کاربری من' : 'ورود یا ثبت‌نام' ?>">
+          <?= icon('user') ?><span class="hide-m"><?= $cu ? e(($cu['name'] ? explode(' ', $cu['name'])[0] : 'حساب من')) : 'ورود | ثبت‌نام' ?></span></a>
+      <?php endif ?>
+      <a href="tel:<?= e(preg_replace('/\D/', '', setting('phone'))) ?>" class="btn btn-accent hide-m hdr-call" aria-label="مشاوره خرید"><?= icon('phone') ?><span>مشاوره خرید</span></a>
     </div>
   </div>
 </header>

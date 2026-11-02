@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class Schema
 {
     /** bump when tables are added — existing sites upgrade automatically on next request */
-    public const VERSION = 3;
+    public const VERSION = 4;
 
     public static function sql(): array
     {
@@ -66,7 +66,7 @@ final class Schema
               province VARCHAR(40), city VARCHAR(60), address VARCHAR(500), postal_code VARCHAR(10), note VARCHAR(1000),
               subtotal $BIG NOT NULL DEFAULT 0, shipping $BIG NOT NULL DEFAULT 0, total $BIG NOT NULL DEFAULT 0,
               pay_amount $BIG NOT NULL DEFAULT 0, pay_type VARCHAR(10) NOT NULL DEFAULT 'full', paid_amount $BIG NOT NULL DEFAULT 0,
-              status VARCHAR(15) NOT NULL DEFAULT 'pending', admin_note VARCHAR(1000), track_token VARCHAR(64),
+              status VARCHAR(15) NOT NULL DEFAULT 'pending', admin_note VARCHAR(1000), track_token VARCHAR(64), customer_id INT NULL,
               created_at $DT NULL, updated_at $DT NULL)$END",
             "CREATE INDEX idx_orders_mobile ON orders (mobile)",
 
@@ -85,7 +85,13 @@ final class Schema
               btn_link VARCHAR(255), align VARCHAR(10) DEFAULT 'right', sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1)$END",
 
             "CREATE TABLE IF NOT EXISTS requests (id $ID, type VARCHAR(20) NOT NULL, name VARCHAR(120), mobile VARCHAR(15), car_id INT NULL,
-              data $TEXT, message VARCHAR(2000), status VARCHAR(10) NOT NULL DEFAULT 'new', ip VARCHAR(45), created_at $DT NULL)$END",
+              data $TEXT, message VARCHAR(2000), status VARCHAR(10) NOT NULL DEFAULT 'new', ip VARCHAR(45), customer_id INT NULL, created_at $DT NULL)$END",
+
+            "CREATE TABLE IF NOT EXISTS customers (id $ID, mobile VARCHAR(15) NOT NULL UNIQUE, name VARCHAR(120), email VARCHAR(120),
+              national_code VARCHAR(10), password VARCHAR(255) NULL, verified TINYINT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1,
+              province VARCHAR(40), city VARCHAR(60), address VARCHAR(500), postal_code VARCHAR(10),
+              created_at $DT NULL, last_login $DT NULL)$END",
+            "CREATE INDEX idx_orders_customer ON orders (customer_id)",
 
             "CREATE TABLE IF NOT EXISTS faqs (id $ID, question VARCHAR(255) NOT NULL, answer $TEXT, grp VARCHAR(20) DEFAULT 'general',
               sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1)$END",
@@ -109,17 +115,32 @@ final class Schema
             try { DB::pdo()->exec($q); }
             catch (PDOException $e) {
                 $m = $e->getMessage();
-                if (!str_contains(strtolower($m), 'exist') && !str_contains($m, 'Duplicate')) app_log('error', 'schema upgrade: ' . $m);
+                // indexes on columns added later in this method are retried below; don't log those
+                if (!str_contains(strtolower($m), 'exist') && !str_contains($m, 'Duplicate') && !str_starts_with($q, 'CREATE INDEX')) app_log('error', 'schema upgrade: ' . $m);
             }
         }
         try { DB::val('SELECT COUNT(*) FROM damage_points'); }
         catch (Throwable $e) { app_log('error', 'schema upgrade: damage_points missing: ' . $e->getMessage()); return; }   // retry next request
+        // v4: link orders/requests to customer accounts (columns added to existing tables)
+        self::addColumn('orders', 'customer_id', 'INT NULL');
+        self::addColumn('requests', 'customer_id', 'INT NULL');
+        try { DB::pdo()->exec('CREATE INDEX idx_orders_customer ON orders (customer_id)'); } catch (Throwable) {}
+        try { DB::val('SELECT COUNT(*) FROM customers'); DB::val('SELECT customer_id FROM orders LIMIT 1'); DB::val('SELECT customer_id FROM requests LIMIT 1'); }
+        catch (Throwable $e) { app_log('error', 'schema upgrade v4 incomplete: ' . $e->getMessage()); return; }
         // v3: sites still on the old default (navy, untouched colours) move to the warm "sunset" preset once
         if ((int)Settings::get('schema_version', '1') < 3 && Settings::get('theme_preset', 'navy') === 'navy'
             && in_array(Settings::get('theme_primary', ''), ['', '#1e3a5f'], true) && in_array(Settings::get('theme_accent', ''), ['', '#f7931e'], true)) {
             Settings::setMany(['theme_preset' => 'sunset', 'theme_primary' => '#2d1b3d', 'theme_accent' => '#ff9a2e', 'theme_bg' => '#f6f5f3', 'theme_text' => '#1f1a24']);
         }
         Settings::set('schema_version', (string)self::VERSION);
+    }
+
+    /** ALTER TABLE … ADD COLUMN, only if the column is missing (works on MySQL & SQLite) */
+    public static function addColumn(string $table, string $col, string $def): void
+    {
+        try { DB::val("SELECT $col FROM $table LIMIT 1"); return; } catch (Throwable) {}
+        try { DB::pdo()->exec("ALTER TABLE $table ADD COLUMN $col $def"); }
+        catch (Throwable $e) { app_log('error', "schema: add $table.$col failed: " . $e->getMessage()); }
     }
 
     public static function install(): void
