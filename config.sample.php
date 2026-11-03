@@ -21,6 +21,10 @@ return [
         'charset' => 'utf8mb4',
     ],
 
+    'license' => [
+        'enabled' => true,               // بررسی لایسنس (برای توسعه می‌توانید false کنید)
+    ],
+
     'upload' => [
         'max_size_mb' => 8,
         'max_width'   => 1920,           // تصاویر بزرگ‌تر به این عرض کوچک می‌شوند

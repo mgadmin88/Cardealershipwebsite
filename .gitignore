@@ -23,3 +23,10 @@ Thumbs.db
 .vscode/
 *.zip
 /storage/backups/*
+
+# license: private signing key and the per-install license file never go in git
+/license-keys/
+/storage/license.key
+# vendor-only tools: license manager (holds its database), license generator, licensing notes
+/tools/license-manager/data/
+/storage/license.state

@@ -16,6 +16,10 @@ if ($missing && Auth::user()['role'] === 'admin'): ?>
   <small>برای فعال‌سازی در سی‌پنل: بخش Select PHP Version ← تب Extensions ← تیک افزونه‌ها را بزنید (یا از پشتیبانی هاست بخواهید).</small>
 </div></div>
 <?php endif ?>
+<?php if (License::enabled() && Auth::user()['role'] === 'admin') { $ls = License::status();
+  if ($ls['state'] === 'ok' && ($ls['days_left'] ?? 99) <= 15): ?>
+  <a class="alert warn" style="margin-bottom:18px;text-decoration:none" href="<?= url('admin/license') ?>"><?= icon('shield') ?><span>لایسنس سایت تا <?= fa($ls['days_left']) ?> روز دیگر منقضی می‌شود. برای تمدید اقدام کنید.</span></a>
+<?php endif; } ?>
 <div class="kpis">
   <div class="kpi"><span class="ki"><?= icon('car') ?></span><div><b><?= fa($s['cars']) ?></b><small>خودروی موجود</small></div></div>
   <div class="kpi" style="--c:#2563eb"><span class="ki"><?= icon('lock') ?></span><div><b><?= fa($s['reserved']) ?></b><small>رزرو شده</small></div></div>

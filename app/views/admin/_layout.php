@@ -1,6 +1,7 @@
 <?php
 $u = Auth::user();
 $p = '/' . trim(substr(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), strlen(base_path())), '/');
+if (License::enabled() && !License::ok() && !in_array($p, ['/admin/license', '/admin/login', '/admin/forgot'], true)) { header('Location: ' . url('admin/license')); return; }
 $on = fn($x) => ($x === '/admin' ? $p === '/admin' : str_starts_with($p, $x)) ? ' class="on"' : '';
 $newReq = (int)DB::val("SELECT COUNT(*) FROM requests WHERE status = 'new'");
 $newOrd = (int)DB::val("SELECT COUNT(*) FROM orders WHERE status = 'paid'");
@@ -14,7 +15,7 @@ $menu = [
     ['نوبت‌دهی و خدمات', module('service_booking') ? [['/admin/appointments', 'calendar', 'نوبت‌های سرویس', 'service', $newAppt], ['/admin/surveys', 'star', 'نظرسنجی مشتریان', 'service'], ['/admin/service-settings', 'wrench', 'تنظیمات نوبت‌دهی', 'settings']] : []],
     ['محتوا', [['/admin/slider', 'image', 'اسلایدر صفحه اول', 'content'], ['/admin/pages', 'doc', 'صفحات (درباره ما، قوانین)', 'content'], ['/admin/faqs', 'info', 'سوالات متداول', 'content']]],
     ['تنظیمات', [['/admin/modules', 'toggle', 'ماژول‌ها', 'settings'], ['/admin/theme', 'palette', 'تم و ظاهر سایت', 'settings'], ['/admin/settings', 'gear', 'تنظیمات عمومی', 'settings'],
-        ['/admin/payments', 'card', 'درگاه‌های پرداخت', 'settings'], ['/admin/sms', 'sms', 'پنل پیامک', 'settings'], ['/admin/users', 'users', 'کاربران و دسترسی‌ها', 'users'], ['/admin/backup', 'upload', 'پشتیبان‌گیری و بازیابی', 'backup'], ['/admin/logs', 'list', 'گزارش فعالیت‌ها', 'users']]],
+        ['/admin/payments', 'card', 'درگاه‌های پرداخت', 'settings'], ['/admin/sms', 'sms', 'پنل پیامک', 'settings'], ['/admin/users', 'users', 'کاربران و دسترسی‌ها', 'users'], ['/admin/backup', 'upload', 'پشتیبان‌گیری و بازیابی', 'backup'], ['/admin/license', 'shield', 'لایسنس', 'settings'], ['/admin/logs', 'list', 'گزارش فعالیت‌ها', 'users']]],
 ];
 ?><!doctype html>
 <html lang="fa" dir="rtl" data-theme="light">

@@ -40,6 +40,9 @@ final class Payment
     /** Start a payment for an order. Returns redirect url or form array or error string */
     public static function start(array $order, array $gw): array
     {
+        // license guard (second line of defence after the page gate): no new payments without a valid license
+        if (!License::ok()) return ['error' => 'این سایت لایسنس فعال ندارد؛ پرداخت انجام نمی‌شود.'];
+        if (License::enabled() && !License::ok()) return ['error' => 'پرداخت آنلاین این سایت در حال حاضر غیرفعال است.'];
         $txId = DB::insert('transactions', ['order_id' => $order['id'], 'gateway_id' => $gw['id'], 'driver' => $gw['driver'],
             'amount' => $order['pay_amount'], 'status' => 'init', 'created_at' => now()]);
         $tx = DB::find('transactions', $txId);

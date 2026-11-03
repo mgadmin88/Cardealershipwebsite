@@ -45,6 +45,20 @@ if (!$isAdmin && module('maintenance') && !Auth::check() && !str_starts_with($pa
 /* ---------- Auto-upgrade database after an update ---------- */
 try { Schema::upgrade(); } catch (Throwable $e) { app_log('error', 'schema upgrade: ' . $e->getMessage()); }
 
+/* ---------- License enforcement ---------- */
+License::tick($isAdmin);
+if (License::enabled() && !License::ok()) {
+    // the admin can always reach login + the license page to paste a new key; bank callbacks of payments already started finish
+    $licenseOpen = in_array($path, ['/admin/login', '/admin/logout', '/admin/forgot', '/admin/license'], true)
+        || str_starts_with($path, '/captcha/') || str_starts_with($path, '/payment/callback/') || $path === '/robots.txt';
+    if (!$licenseOpen) {
+        if ($isAdmin && Auth::check()) redirect('admin/license');   // steer admins to the fix
+        http_response_code(403);
+        view('site/license_error', ['st' => License::status()], '');
+        exit;
+    }
+}
+
 /* ---------- Dispatch ---------- */
 try {
     foreach (require APP . '/routes.php' as [$methods, $pattern, $handler]) {

@@ -1,5 +1,6 @@
 <?php
 /** @var string $content */
+if (License::enabled() && !License::ok()) { http_response_code(403); require APP . '/views/site/license_error.php'; return; }
 $siteName = setting('site_name');
 $pageTitle = isset($title) ? $title . ' | ' . $siteName : $siteName . ' | ' . setting('site_tagline');
 $desc = $metaDesc ?? setting('site_description');

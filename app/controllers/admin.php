@@ -973,3 +973,30 @@ function admin_backup_download(): void
     readfile($p);
     exit;
 }
+
+/* ---------- license ---------- */
+function admin_license(): void
+{
+    Auth::require('settings');
+    if (is_post()) {
+        $key = trim((string)input('license_key'));
+        if ($key === '') { flash('error', 'کد لایسنس را وارد کنید.'); redirect('admin/license'); }
+        $d = License::parse($key);
+        if (!$d) { flash('error', 'این کد لایسنس معتبر نیست (امضای دیجیتال تأیید نشد).'); redirect('admin/license'); }
+        $dom = strtolower((string)preg_replace('/^www\./', '', trim((string)($d['domain'] ?? ''))));
+        if ($dom !== '' && $dom !== '*' && $dom !== License::host()) {
+            flash('error', 'این لایسنس برای دامنه «' . e($dom) . '» صادر شده، نه ' . e(License::host()) . '.');
+            redirect('admin/license');
+        }
+        if ((int)($d['exp'] ?? 0) > 0 && (int)$d['exp'] <= time()) {
+            flash('error', 'این لایسنس منقضی شده است (تاریخ انقضا: ' . jdate((int)$d['exp']) . ').');
+            redirect('admin/license');
+        }
+        if (!License::save($key)) { flash('error', 'ذخیره لایسنس ناموفق بود؛ دسترسی نوشتن پوشه storage را بررسی کنید.'); redirect('admin/license'); }
+        log_activity('license.update', ($d['id'] ?? '') . ' ' . ($d['plan'] ?? ''));
+        flash('success', 'لایسنس با موفقیت ثبت شد.');
+        redirect('admin/license');
+    }
+    view('admin/license', ['st' => License::status(), 'host' => License::host(), 'enabled' => License::enabled(),
+        'title' => 'لایسنس نرم‌افزار']);
+}

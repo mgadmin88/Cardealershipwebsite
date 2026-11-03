@@ -76,6 +76,7 @@ return [
     ['GET',      '/admin/surveys',            'admin_surveys'],
     ['GET|POST', '/admin/backup',             'admin_backup'],
     ['GET',      '/admin/backup/download',    'admin_backup_download'],
+    ['GET|POST', '/admin/license',            'admin_license'],
     ['GET|POST', '/admin/customers/{id}',     'admin_customer'],
     ['GET',      '/admin/requests',           'admin_requests'],
     ['POST',     '/admin/requests/{id}',      'admin_request_update'],

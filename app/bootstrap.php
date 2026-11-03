@@ -5,6 +5,7 @@ define('ROOT', dirname(__DIR__));
 define('APP', ROOT . '/app');
 if (!defined('PUB')) define('PUB', ROOT . '/public');   // web root (public or public_html)
 define('STORAGE', ROOT . '/storage');
+define('APP_VERSION', '6.0');
 
 if (PHP_VERSION_ID < 80100) {
     http_response_code(500);
